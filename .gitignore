@@ -6,3 +6,20 @@ build/
 *.log
 uploads/
 pg_data/
+
+# Windows
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Client local env files
+client/.env
+client/.env.local
+client/.env.*.local
+
+# VS Code local overrides (keep .vscode/settings.json and extensions.json)
+.vscode/*.code-snippets

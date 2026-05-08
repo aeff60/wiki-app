@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ckolkman.vscode-postgres",
+    "gitlab.gitlab-workflow",
+    "humao.rest-client",
+    "mikestead.dotenv",
+    "eamodio.gitlens"
+  ]
+}
