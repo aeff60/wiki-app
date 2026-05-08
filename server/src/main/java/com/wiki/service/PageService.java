@@ -190,7 +190,7 @@ public class PageService {
                 page.getTitle(),
                 page.getSlug(),
                 page.getContent(),
-                page.getAuthor().getId().toString(),
+                page.getAuthor().getId(),
                 page.getAuthor().getName(),
                 page.isPublished(),
                 page.getViewCount(),

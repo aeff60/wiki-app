@@ -11,7 +11,7 @@ public record PageResponse(
         String title,
         String slug,
         String content,
-        String authorId,
+        UUID authorId,
         String authorName,
         boolean isPublished,
         int viewCount,
