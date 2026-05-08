@@ -1,0 +1,102 @@
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  NODE_VERSION: "24"
+  POSTGRES_DB: wikidb_test
+  POSTGRES_USER: wikiuser
+  POSTGRES_PASSWORD: supersecret
+
+# ── Shared cache ─────────────────────────────────────────────────────────────
+.npm_cache: &npm_cache
+  cache:
+    key:
+      files:
+        - server/package-lock.json
+        - client/package-lock.json
+    paths:
+      - server/node_modules/
+      - client/node_modules/
+    policy: pull-push
+
+# ── Lint ─────────────────────────────────────────────────────────────────────
+lint:server:
+  stage: lint
+  image: node:24-alpine
+  <<: *npm_cache
+  script:
+    - cd server && npm ci
+    - npx eslint src/
+  rules:
+    - changes:
+        - server/**/*
+
+lint:client:
+  stage: lint
+  image: node:24-alpine
+  <<: *npm_cache
+  script:
+    - cd client && npm ci
+    - npx eslint src/
+  rules:
+    - changes:
+        - client/**/*
+
+# ── Test ──────────────────────────────────────────────────────────────────────
+test:server:
+  stage: test
+  image: node:24-alpine
+  <<: *npm_cache
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+  variables:
+    DATABASE_URL: "postgresql://wikiuser:supersecret@postgres:5432/wikidb_test"
+    NODE_ENV: test
+    JWT_SECRET: ci_test_secret_at_least_64_chars_long_xxxxxxxxxxxxxxxxxxxxxxxxxxx
+    JWT_EXPIRES_IN: 1h
+    CLIENT_URL: "http://localhost:5173"
+  script:
+    - cd server && npm ci
+    - npm run migrate
+    - npm test
+  coverage: '/Statements\s*:\s*(\d+\.?\d*)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: server/coverage/cobertura-coverage.xml
+    expire_in: 1 week
+
+test:client:
+  stage: test
+  image: node:24-alpine
+  <<: *npm_cache
+  script:
+    - cd client && npm ci
+    - npm test
+  coverage: '/Statements\s*:\s*(\d+\.?\d*)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: client/coverage/cobertura-coverage.xml
+    expire_in: 1 week
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+build:client:
+  stage: build
+  image: node:24-alpine
+  <<: *npm_cache
+  script:
+    - cd client && npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - client/dist/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_MERGE_REQUEST_IID
