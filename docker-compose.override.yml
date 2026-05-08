@@ -3,11 +3,9 @@ services:
     build:
       target: development
     volumes:
-      - ./server/src:/app/src
-      - ./server/db:/app/db
-    command: npm run dev
+      - uploads_data:/app/uploads
     environment:
-      NODE_ENV: development
+      PORT: 4000
     ports:
       - "4000:4000"
 

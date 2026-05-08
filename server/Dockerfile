@@ -1,15 +1,16 @@
-FROM node:24-alpine AS base
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm i
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
+COPY src ./src
+RUN mvn package -DskipTests -q
 
-FROM base AS development
-RUN npm i
-COPY . .
+FROM eclipse-temurin:17-jre-alpine AS production
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 4000
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
-FROM base AS production
-COPY . .
+FROM build AS development
 EXPOSE 4000
-CMD ["node", "src/server.js"]
+ENTRYPOINT ["mvn", "spring-boot:run"]
